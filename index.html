@@ -1,243 +1,467 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - BYTROX SCRIPT</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    overflow: hidden;
-    background: black;
-    color: white;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Wallet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        
+        /* Day Mode Variables (Default) */
+        :root {
+            --primary-blue: #4a69bd; --light-gray: #f0f2f5; --dark-text: #333;
+            --light-text: #888; --white: #ffffff; --green: #2ecc71; --light-green-bg: #e8f8ef;
+            --red: #e74c3c; --light-red-bg: #fdedec; --border-color: #e0e0e0;
+            --toast-bg: #2c3e50; --shimmer-base: #e0e0e0; --shimmer-highlight: #f0f0f0;
+        }
 
-  /* Matrix Background */
-  canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-  }
+        /* --- Dark Mode Variables --- */
+        body.dark-mode {
+            --light-gray: #121212;
+            --white: #1e1e1e;
+            --dark-text: #e0e0e0;
+            --light-text: #888;
+            --border-color: #333;
+            --light-green-bg: #2c3a2f;
+            --light-red-bg: #412c2c;
+            --shimmer-base: #333;
+            --shimmer-highlight: #444;
+        }
 
-  /* Banner text */
-  .banner {
-    width: 100%;
-    background: rgba(0,0,0,0.7);
-    color: #00ff00;
-    font-size: 16px;
-    font-weight: 900;
-    white-space: nowrap;
-    overflow: hidden;
-    text-align: center;
-    text-shadow: 0 0 5px #00ff00,0 0 10px #00ff00,0 0 20px #00ff00,0 0 40px #00ff00;
-  }
-  .banner span {
-    display: inline-block;
-    padding-left: 100%;
-    animation: scrollText 15s linear infinite;
-  }
-  @keyframes scrollText { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-
-  /* Logo */
-  .logo {
-    margin-top: 50px;
-    text-align: center;
-    animation: fadeInOut 2s infinite;
-  }
-  .logo img { width: 240px; height: auto; }
-  @keyframes fadeInOut { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
-
-  /* Card container */
-  .card {
-    background: rgba(0,0,0,0.6);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
-    text-align: center;
-    max-width: 400px;
-    margin-top: 40px;
-    font-weight: 900;
-  }
-
-  .code {
-    font-size: 2em;
-    font-weight: 900;
-    color: #00ff00;
-    margin-top: 10px;
-    cursor: pointer;
-    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 40px #00ff00;
-  }
-
-  .copyMsg {
-    font-size: 0.9em;
-    color: lime;
-    display: none;
-    margin-top: 5px;
-  }
-
-  .btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 12px 20px;
-    font-size: 1em;
-    background: #007bff;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 8px;
-    box-shadow: 0 0 20px #00f7ff, 0 0 40px #00f7ff;
-    transition: 0.3s;
-  }
-  .btn:hover {
-    background: #0056b3;
-    box-shadow: 0 0 25px #00f7ff, 0 0 50px #00f7ff;
-  }
-
-  /* Loading overlay */
-  #loadingOverlay {
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:white;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-    font-family: Arial, sans-serif;
-    font-weight:bold;
-    color:black;
-  }
-  .spinner {
-    border:6px solid #ddd;
-    border-top:6px solid #007bff;
-    border-radius:50%;
-    width:60px;
-    height:60px;
-    animation: spin 1s linear infinite;
-    margin-bottom:20px;
-  }
-  @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
-</style>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+        body {
+            font-family: 'Roboto', sans-serif; background-color: var(--light-gray);
+            margin: 0; padding: 0 0 80px 0; color: var(--dark-text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .app-wrapper { max-width: 500px; margin: 0 auto; background-color: var(--light-gray); }
+        .page { display: none; }
+        .page.active { display: block; }
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;
+            background-color: var(--white); border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100; transition: background-color 0.3s, border-color 0.3s;
+        }
+        .icon-box {
+            width: 40px; height: 40px; background-color: var(--white); border: 1px solid var(--border-color);
+            border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer;
+            flex-shrink: 0; transition: background-color 0.3s, border-color 0.3s;
+        }
+        .icon-box svg { width: 24px; height: 24px; fill: var(--light-text); }
+        .header-title {
+            flex-grow: 1; text-align: center; font-size: 1.2rem; font-weight: 700;
+            color: var(--dark-text); margin: 0 10px;
+        }
+        .back-arrow { font-size: 1.5rem; cursor: pointer; color: var(--dark-text); }
+        .main-content { padding: 20px; }
+        .wallet-card, .transaction-item, .summary-card, .search-filter-section, .modal-content, .empty-msg {
+            background-color: var(--white);
+            transition: background-color 0.3s;
+        }
+        .wallet-card { border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
+        .card-label { font-size: 0.9rem; color: var(--light-text); }
+        .card-amount { font-size: 2rem; font-weight: 700; color: var(--dark-text); margin: 5px 0; }
+        .sub-balance-text { font-size: 1rem; color: var(--light-text); margin-bottom: 15px; }
+        .progress-bar { width: 100%; height: 8px; background-color: #e9ecef; border-radius: 4px; overflow: hidden; }
+        .progress-fill { width: 100%; height: 100%; background-color: var(--primary-blue); border-radius: 4px; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .action-btn { background-color: var(--white); border: 1px solid var(--border-color); border-radius: 15px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 500; color: var(--dark-text); cursor: pointer; transition: background-color 0.2s; }
+        body.light-mode .action-btn:hover { background-color: #f8f9fa; }
+        body.dark-mode .action-btn:hover { background-color: #2a2a2a; }
+        .action-btn svg { width: 24px; height: 24px; margin-bottom: 8px; }
+        .deposit-icon-svg { fill: var(--green); }
+        .withdraw-icon-svg { fill: var(--red); }
+        .transactions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--dark-text); }
+        .view-all-icon { cursor: pointer; }
+        .view-all-icon svg { width: 20px; height: 20px; fill: var(--primary-blue); }
+        .transaction-list { display: flex; flex-direction: column; gap: 10px; }
+        .transaction-item { border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); }
+        .transaction-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .transaction-icon.deposit, .transaction-icon.credit { background-color: var(--light-green-bg); }
+        .transaction-icon.withdraw { background-color: var(--light-red-bg); }
+        .transaction-icon svg { width: 22px; height: 22px; }
+        .transaction-details { flex-grow: 1; }
+        .transaction-number { font-weight: 500; color: var(--dark-text); font-size: 0.9rem; }
+        .transaction-id { font-size: 0.8rem; color: var(--light-text); }
+        .transaction-info { text-align: right; }
+        .transaction-amount { font-weight: 700; font-size: 0.95rem; }
+        .transaction-amount.positive { color: var(--green); }
+        .transaction-amount.negative { color: var(--red); }
+        .transaction-time { font-size: 0.8rem; color: var(--light-text); }
+        .empty-msg { text-align: center; color: var(--light-text); padding: 30px 0; border-radius: 15px; }
+        .app-footer { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--white); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; max-width: 500px; margin: 0 auto; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 200; transition: background-color 0.3s, border-color 0.3s; }
+        .footer-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--light-text); font-size: 0.8rem; cursor: pointer; }
+        .footer-item.active { color: var(--primary-blue); }
+        .footer-item svg { width: 24px; height: 24px; fill: currentColor; }
+        .summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .summary-card { padding: 20px 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+        .summary-card .card-label { display: flex; align-items: center; gap: 8px; color: var(--light-text); font-size: 0.9rem; }
+        .summary-card .card-label svg { fill: var(--light-text) !important; }
+        .summary-card .card-amount { font-size: 1.3rem; font-weight: 500; margin-top: 0; }
+        .summary-card .card-amount.deposit { color: var(--green); }
+        .summary-card .card-amount.withdraw { color: var(--red); }
+        .commission-card { grid-column: 1 / -1; } .commission-card .card-amount { color: var(--primary-blue); font-size: 1.5rem; }
+        .search-filter-section { border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-bar input, .modal-body input { background-color: var(--light-gray); color: var(--dark-text); }
+        .search-bar input { flex-grow: 1; border: none; border-radius: 10px; padding: 12px; font-size: 1rem; }
+        .search-bar .icon-box { background-color: var(--light-gray); border: none; }
+        .filter-tabs { display: flex; gap: 10px; }
+        .filter-tab { flex-grow: 1; text-align: center; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 500; color: var(--dark-text); border: 1px solid transparent; transition: all 0.2s; }
+        .filter-tab.active { color: var(--primary-blue); border-color: var(--primary-blue); background-color: #eaf1ff; }
+        body.dark-mode .filter-tab.active { background-color: rgba(74, 105, 189, 0.2); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 20px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .modal-title { font-size: 1.3rem; font-weight: 700; color: var(--dark-text); }
+        .close-btn { font-size: 1.8rem; cursor: pointer; color: var(--light-text); border: none; background: none; line-height: 1; }
+        .modal-body label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--dark-text); font-weight: 500; }
+        .modal-body input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 1rem; box-sizing: border-box; }
+        body.dark-mode .modal-body input:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.3); }
+        body.light-mode .modal-body input:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 3px #eaf1ff; }
+        .modal-footer { margin-top: 15px; }
+        .modal-footer button { width: 100%; padding: 15px; border-radius: 10px; border: none; font-size: 1rem; font-weight: 700; color: white; cursor: pointer; transition: background-color 0.2s; } .modal-footer button:hover { opacity: 0.9; }
+        .btn-green { background-color: var(--green); } .btn-red { background-color: var(--red); } .btn-blue { background-color: var(--primary-blue); }
+        #deposit-step-2 { display: none; }
+        .user-info-box { background-color: var(--light-gray); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-weight: 500; }
+        .toast-container { position: relative; margin-top: -10px; margin-bottom: 20px; z-index: 50; }
+        .toast-notification { background-color: var(--toast-bg); color: var(--white); padding: 15px; border-radius: 10px; display: none; align-items: flex-start; gap: 12px; opacity: 0; transition: opacity 0.5s ease-in-out; } .toast-notification.show { display: flex; opacity: 1; }
+        .toast-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-top: 3px; } .toast-icon svg { width: 12px; height: 12px; fill: var(--white); }
+        .toast-icon.success { background-color: var(--green); } .toast-icon.info { background-color: var(--primary-blue); } .toast-icon.error { background-color: var(--red); }
+        .toast-details p { margin: 0; } .toast-title { font-weight: 700; font-size: 1rem; margin-bottom: 5px; } .toast-message { font-size: 0.9rem; color: #e0e0e0; }
+        #help-page .main-content { padding-bottom: 90px; }
+        .help-header { display: flex; align-items: center; justify-content: center; position: relative; text-align: center; } .help-header .back-arrow { position: absolute; left: 20px; }
+        .online-status { text-align: center; padding-top: 10px; color: var(--dark-text); font-size: 0.9rem; } .online-status .dot { display: inline-block; width: 8px; height: 8px; background: var(--green); border-radius: 50%; margin-right: 5px; }
+        .shimmer-wrapper { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .shimmer-line { height: 50px; border-radius: 12px; background: linear-gradient(90deg, var(--shimmer-base) 25%, var(--shimmer-highlight) 50%, var(--shimmer-base) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; } .shimmer-line.short { width: 60%; } .shimmer-line.medium { width: 80%; } .shimmer-line.right { align-self: flex-end; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .chat-input-footer { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; background: var(--white); padding: 10px 15px; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; transition: background-color 0.3s, border-color 0.3s; }
+        .chat-input { flex-grow: 1; border: none; background: var(--light-gray); padding: 12px; border-radius: 20px; font-size: 1rem; color: var(--dark-text); transition: background-color 0.3s; }
+        .chat-icon-btn { cursor: pointer; fill: var(--primary-blue); width: 24px; height: 24px; }
+        .profile-info { padding: 20px; display: flex; align-items: center; gap: 20px; }
+        .profile-icon { width: 60px; height: 60px; border-radius: 50%; background: var(--light-gray); display: flex; justify-content: center; align-items: center; }
+        .profile-icon svg { width: 30px; height: 30px; fill: var(--light-text); }
+        .profile-name { font-size: 1.4rem; font-weight: 700; color: var(--dark-text); }
+        .details-card { background-color: var(--white); margin: 0 20px 20px; padding: 20px; border-radius: 15px; }
+        .detail-item { margin-bottom: 15px; } .detail-item:last-child { margin-bottom: 0; }
+        .detail-label { font-size: 0.8rem; color: var(--light-text); margin-bottom: 5px; text-transform: uppercase; }
+        .detail-value { font-size: 1rem; font-weight: 500; color: var(--dark-text); }
+        .settings-list { margin: 0 20px; }
+        .settings-item { background-color: var(--white); display: flex; align-items: center; padding: 15px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: background-color 0.2s; }
+        body.light-mode .settings-item:hover { background-color: #f8f9fa; }
+        body.dark-mode .settings-item:hover { background-color: #2a2a2a; }
+        .settings-item-icon { margin-right: 15px; fill: var(--light-text); }
+        .settings-item-text { flex-grow: 1; }
+        .settings-item-text .title { font-size: 1rem; font-weight: 500; color: var(--dark-text); }
+        .settings-item-text .subtitle { font-size: 0.9rem; color: var(--light-text); }
+        .settings-item-arrow { fill: var(--light-text); }
+    </style>
 </head>
 <body>
 
-<!-- Loading overlay -->
-<div id="loadingOverlay">
-  <div class="spinner"></div>
-  <div id="loadingText">Connecting...</div>
-</div>
+<div class="app-wrapper">
+    <!-- PAGE 1: MAIN WALLET -->
+    <div id="main-page" class="page active">
+        <header class="app-header">
+            <div id="profile-icon-btn" class="icon-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <span class="header-title">ID 1428159</span>
+            <div id="notification-btn" class="icon-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
+        </header>
+        <main class="main-content">
+            <div class="wallet-card">
+                <p class="card-label">Main Balance</p><h1 id="main-balance" class="card-amount">729 USD</h1>
+                <p class="sub-balance-text">Sub Balance: <span id="secondary-balance">0.00 USD</span></p>
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            </div>
+            <div class="action-buttons">
+                <div id="deposit-btn" class="action-btn"><svg class="deposit-icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Deposit</span></div>
+                <div id="withdraw-btn" class="action-btn"><svg class="withdraw-icon-svg" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg><span>Withdraw</span></div>
+            </div>
+            <section>
+                <div class="transactions-header"><h2 class="section-title">Recent transactions</h2><a id="view-all-btn" class="view-all-icon"><svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg></a></div>
+                <div id="toast-container" class="toast-container"></div>
+                <div id="mini-transaction-list" class="transaction-list"><p id="mini-empty-msg" class="empty-msg">No recent transactions.</p></div>
+            </section>
+        </main>
+    </div>
 
-<canvas id="matrix"></canvas>
+    <!-- PAGE 2: TRANSACTIONS HISTORY -->
+    <div id="transactions-page" class="page">
+        <header class="app-header"><span id="back-to-main-btn" class="back-arrow">&#8592;</span><div class="header-title">Transactions</div><div id="commission-payout-btn" class="icon-box" title="Check for Commission Payout"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div></header>
+        <main class="main-content">
+            <div id="transactions-toast-container" class="toast-container" style="margin-top:0; margin-bottom: 20px;"></div>
+            <div class="summary-cards">
+                <div class="summary-card"><div class="card-label"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Deposit</span></div><div id="total-deposits" class="card-amount deposit">0.00</div></div>
+                <div class="summary-card"><div class="card-label"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg><span>Withdrawal</span></div><div id="total-withdrawals" class="card-amount withdraw">0.00</div></div>
+                <div class="summary-card commission-card"><div class="card-label"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg><span>Total Commission</span></div><div id="total-commission" class="card-amount">0.00</div></div>
+            </div>
+            <div class="search-filter-section">
+                <div class="search-bar"><input type="text" id="search-input" placeholder="Enter WebUser ID..."><div class="icon-box"><svg class="deposit-icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div></div>
+                <div class="filter-tabs"><div class="filter-tab active" data-filter="all">All</div><div class="filter-tab" data-filter="deposit">Deposits</div><div class="filter-tab" data-filter="withdraw">Withdrawals</div></div>
+            </div>
+            <div id="full-transaction-list" class="transaction-list"><p id="full-empty-msg" class="empty-msg">Empty</p></div>
+        </main>
+    </div>
 
-<div class="banner">
-  <span>@ByTroX_1 TELEGRAM CHANNEL t.me/ByTroX_NoVa CRASH PREDICTOR BYTROX ⚡</span>
-</div>
+    <!-- PAGE 3: HELP PAGE -->
+    <div id="help-page" class="page">
+        <header class="app-header help-header"><span id="back-from-help-btn" class="back-arrow">&#8592;</span><div class="header-title">Customer support</div></header>
+        <div class="online-status"><span class="dot"></span>Operator is online</div>
+        <main class="main-content"><div class="shimmer-wrapper"><div class="shimmer-line"></div><div class="shimmer-line short right"></div><div class="shimmer-line medium"></div><div class="shimmer-line short"></div><div class="shimmer-line medium right"></div><div class="shimmer-line"></div></div></main>
+        <footer class="chat-input-footer">
+            <svg class="chat-icon-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+            <input type="text" class="chat-input" placeholder="Enter your question..."><svg class="chat-icon-btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </footer>
+    </div>
 
-<div class="logo">
-  <img src="https://i.ibb.co/7tJ96HWr/Logo.png" alt="Logo">
-</div>
+    <!-- PAGE 4: PROFILE PAGE --- -->
+    <div id="profile-page" class="page">
+        <header class="app-header"><span id="back-from-profile-btn" class="back-arrow">&#8592;</span><div class="header-title">Profile</div></header>
+        <div class="profile-info">
+            <div class="profile-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="profile-name">ByTroX Agent</div>
+        </div>
+        <div class="details-card">
+            <div class="detail-item"><div class="detail-label">EPOS name</div><div class="detail-value">BYTROX 24/7</div></div>
+            <div class="detail-item"><div class="detail-label">EPOS address</div><div class="detail-value">Uzbekistan fast service 24/7</div></div>
+        </div>
+        <div class="details-card">
+            <div class="settings-list">
+                <div class="settings-item"><svg class="settings-item-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4z M4 18c.22-.72 3.31-2 8-2s7.78 1.28 8 2H4z"/></svg><div class="settings-item-text"><div class="title">Partnership verification</div></div><svg class="settings-item-arrow" width="24" height="24" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+                <div id="change-theme-btn" class="settings-item"><svg class="settings-item-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM11 19.93c-3.94-.49-7-3.85-7-7.93s3.06-7.44 7-7.93v15.86z"/></svg><div class="settings-item-text"><div class="title">Change theme</div><div id="theme-status-text" class="subtitle">Day</div></div><svg class="settings-item-arrow" width="24" height="24" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+                <div class="settings-item"><svg class="settings-item-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg><div class="settings-item-text"><div class="title">Security</div></div><svg class="settings-item-arrow" width="24" height="24" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+                <div class="settings-item"><svg class="settings-item-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg><div class="settings-item-text"><div class="title">Log out</div></div><svg class="settings-item-arrow" width="24" height="24" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+            </div>
+        </div>
+    </div>
 
-<div class="card">
-  <h2>Your Code</h2>
-  <div id="deviceCode" class="code">Loading.</div>
-  <div id="copyMsg" class="copyMsg">Copied</div>
-  <a href="https://t.me/bytrox_1" class="btn">Contract Admin</a>
+
+    <footer class="app-footer">
+        <div id="home-footer-btn" class="footer-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></div>
+        <div id="help-footer-btn" class="footer-item"><svg viewBox="0 0 24 24"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg><span>Help</span></div>
+    </footer>
+    
+    <!-- MODALS -->
+    <div id="deposit-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"> <h3 class="modal-title">New Deposit</h3> <button class="close-btn">&times;</button> </div> <form id="deposit-form"> <div id="deposit-step-1" class="modal-body"> <div class="form-group"> <label for="recipient-id">WebUser ID</label> <input type="number" id="recipient-id" placeholder="Enter 10-digit ID" required> </div> <div class="modal-footer"> <button type="button" id="search-user-btn" class="btn-blue">Search User</button> </div> </div> <div id="deposit-step-2" class="modal-body"> <p class="user-info-box">Depositing to: <span id="deposit-user-id-display"></span></p> <div class="form-group"> <label for="deposit-amount">Amount</label> <input type="number" id="deposit-amount" placeholder="0.00" required step="0.01"> </div> <div class="modal-footer"> <button type="submit" class="btn-green">Confirm Deposit</button> </div> </div> </form> </div> </div>
+    <div id="withdrawal-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"> <h3 class="modal-title">New Payout</h3> <button class="close-btn">&times;</button> </div> <form id="withdrawal-form"> <div class="modal-body"> <div class="form-group"> <label for="withdrawal-code">Withdrawal Code</label> <input type="text" id="withdrawal-code" placeholder="Enter withdrawal code" required> </div> </div> <div class="modal-footer"> <button type="submit" class="btn-red">Confirm Payout</button> </div> </form> </div> </div>
+    <div id="credit-modal" class="modal-overlay"> <div class="modal-content"> <div class="modal-header"> <h3 class="modal-title">Add Credit to Main Balance</h3> <button class="close-btn">&times;</button> </div> <form id="credit-form"> <div class="modal-body"> <div class="form-group"> <label for="credit-amount">Amount</label> <input type="number" id="credit-amount" placeholder="0.00" required step="0.01"> </div> </div> <div class="modal-footer"> <button type="submit" class="btn-green">Confirm Deposit</button> </div> </form> </div> </div>
+
 </div>
 
 <script>
-/* Matrix Background Script */
-const canvas = document.getElementById("matrix");
-const ctx = canvas.getContext("2d");
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-const letters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリギジヂビピウゥクスツヌフムユュルグズヅブプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const fontSize = 14;
-const columns = canvas.width / fontSize;
-const drops = [];
-for(let x=0;x<columns;x++) drops[x]=1;
-function draw(){
-  ctx.fillStyle="rgba(0,0,0,0.05)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="#0F0";
-  ctx.font=fontSize+"px monospace";
-  for(let i=0;i<drops.length;i++){
-    const text=letters.charAt(Math.floor(Math.random()*letters.length));
-    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
-    if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
-    drops[i]++;
-  }
-}
-setInterval(draw,33);
+document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE MANAGEMENT ---
+    let state = { 
+        mainBalance: 729, secondaryBalance: 0, transactions: [], 
+        lastCommissionPayoutDate: null,
+        theme: 'day'
+    };
+    const initialMainBalance = 729;
+    const COMMISSION_PERIOD_DAYS = 7;
+    const DEPOSIT_COMMISSION_RATE = 0.05;
+    const WITHDRAWAL_COMMISSION_RATE = 0.02;
+    const withdrawalCodes = { 
+        'cqpY': 3000, 'm2qs': 12000, 'h59q': 5000, 'sqpf': 500, '12er': 1000, 'pqwe': 15000, 
+        'cqwe': 9000, 'rewu': 5000, 'ewio': 10000, 'tq12': 2000, 'rf9q': 3000, 'pmeq': 4000, 
+        '57nq': 6000, 'pq99': 50000000 
+    };
 
-// Firebase config
-const firebaseConfig = {
-  apiKey:"AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
-  authDomain:"giper-8fd92.firebaseapp.com",
-  databaseURL:"https://giper-8fd92-default-rtdb.firebaseio.com",
-  projectId:"giper-8fd92",
-  storageBucket:"giper-8fd92.firebasestorage.app",
-  messagingSenderId:"485740337398",
-  appId:"1:485740337398:web:xxxxxx"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    // --- DOM ELEMENT REFERENCES ---
+    const pages = document.querySelectorAll('.page');
+    const notificationBtn = document.getElementById('notification-btn');
+    const profileIconBtn = document.getElementById('profile-icon-btn');
+    const backFromProfileBtn = document.getElementById('back-from-profile-btn');
+    const changeThemeBtn = document.getElementById('change-theme-btn');
+    const themeStatusText = document.getElementById('theme-status-text');
+    const homeFooterBtn = document.getElementById('home-footer-btn');
+    const helpFooterBtn = document.getElementById('help-footer-btn');
+    const backFromHelpBtn = document.getElementById('back-from-help-btn');
+    const commissionPayoutBtn = document.getElementById('commission-payout-btn');
+    const mainBalanceEl = document.getElementById('main-balance');
+    const secondaryBalanceEl = document.getElementById('secondary-balance');
+    const progressFillEl = document.getElementById('progress-fill');
+    const miniTransactionListEl = document.getElementById('mini-transaction-list');
+    const fullTransactionListEl = document.getElementById('full-transaction-list');
+    const totalDepositsEl = document.getElementById('total-deposits');
+    const totalWithdrawalsEl = document.getElementById('total-withdrawals');
+    const totalCommissionEl = document.getElementById('total-commission');
+    const searchInput = document.getElementById('search-input');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const depositModal = document.getElementById('deposit-modal');
+    const withdrawalModal = document.getElementById('withdrawal-modal');
+    const creditModal = document.getElementById('credit-modal');
+    const depositForm = document.getElementById('deposit-form');
+    const withdrawalForm = document.getElementById('withdrawal-form');
+    const creditForm = document.getElementById('credit-form');
 
-// Device ID
-let deviceId = localStorage.getItem("deviceId");
-if(!deviceId){
-  deviceId="dev_"+Math.random().toString(36).substr(2,9);
-  localStorage.setItem("deviceId",deviceId);
-}
+    // --- LOCAL STORAGE & THEME ---
+    function saveState() { localStorage.setItem('agentWalletState', JSON.stringify(state)); }
+    function loadState() {
+        const savedState = localStorage.getItem('agentWalletState');
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            parsedState.transactions.forEach(tx => tx.timestamp = new Date(tx.timestamp));
+            if (parsedState.lastCommissionPayoutDate) parsedState.lastCommissionPayoutDate = new Date(parsedState.lastCommissionPayoutDate);
+            parsedState.theme = parsedState.theme || 'day';
+            state = parsedState;
+        } else { state.lastCommissionPayoutDate = new Date(); saveState(); }
+    }
+    
+    function applyTheme(theme) {
+        document.body.classList.remove('dark-mode', 'light-mode');
+        document.body.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
+        themeStatusText.textContent = theme === 'dark' ? 'Night' : 'Day';
+        state.theme = theme;
+        saveState();
+    }
+    
+    // --- NAVIGATION ---
+    function showPage(pageId) {
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
 
-// Device Code
-let deviceCode = localStorage.getItem("deviceCode");
-if(!deviceCode){
-  const chars="123456789QWERTYUIOPABSDFGHJKLZXCVBNM";
-  deviceCode="";
-  for(let i=0;i<10;i++) deviceCode+=chars.charAt(Math.floor(Math.random()*chars.length));
-  localStorage.setItem("deviceCode",deviceCode);
-  db.ref("crashpredict/"+deviceId).set({code:deviceCode,active:false});
-}
+    profileIconBtn.addEventListener('click', () => showPage('profile-page'));
+    backFromProfileBtn.addEventListener('click', () => showPage('main-page'));
+    document.getElementById('view-all-btn').addEventListener('click', () => { showPage('transactions-page'); renderTransactionsPage(); });
+    document.getElementById('back-to-main-btn').addEventListener('click', () => { showPage('main-page'); });
+    homeFooterBtn.addEventListener('click', () => { showPage('main-page'); homeFooterBtn.classList.add('active'); helpFooterBtn.classList.remove('active'); });
+    helpFooterBtn.addEventListener('click', () => { showPage('help-page'); helpFooterBtn.classList.add('active'); homeFooterBtn.classList.remove('active'); });
+    backFromHelpBtn.addEventListener('click', () => { showPage('main-page'); homeFooterBtn.classList.add('active'); helpFooterBtn.classList.remove('active'); });
+    
+    changeThemeBtn.addEventListener('click', () => {
+        const newTheme = state.theme === 'day' ? 'dark' : 'day';
+        applyTheme(newTheme);
+    });
 
-// Show code
-const codeEl = document.getElementById("deviceCode");
-codeEl.innerText = deviceCode;
+    // --- INITIALIZATION ---
+    loadState();
+    applyTheme(state.theme);
+    checkAndProcessCommission(false);
+    updateMainDisplay();
 
-// Copy
-codeEl.addEventListener("click",()=>{
-  navigator.clipboard.writeText(deviceCode).then(()=>{
-    document.getElementById("copyMsg").style.display="block";
-    setTimeout(()=>{document.getElementById("copyMsg").style.display="none";},1500);
-  });
+    commissionPayoutBtn.addEventListener('click', () => { checkAndProcessCommission(true); });
+    function closeModal() { depositModal.style.display = 'none'; withdrawalModal.style.display = 'none'; creditModal.style.display = 'none'; }
+    document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', (e) => e.target === modal && closeModal()));
+    document.querySelectorAll('.close-btn').forEach(btn => btn.addEventListener('click', closeModal));
+    
+    // --- MODAL HANDLERS ---
+    notificationBtn.addEventListener('click', () => {
+        creditForm.reset();
+        creditModal.style.display = 'flex';
+        document.getElementById('credit-amount').focus();
+    });
+
+    creditForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('credit-amount').value);
+        if (isNaN(amount) || amount <= 0) return showToast('error', 'Invalid Amount', 'Please enter a valid positive amount.');
+        
+        state.mainBalance += amount;
+        addTransaction({ amount, type: 'credit' });
+        showToast('success', 'Deposited', `A credit of ${formatCurrency(amount)} USD was added to your Main Balance.`);
+        updateMainDisplay();
+        closeModal();
+    });
+
+    document.getElementById('deposit-btn').addEventListener('click', () => { depositForm.reset(); document.getElementById('deposit-step-1').style.display = 'block'; document.getElementById('deposit-step-2').style.display = 'none'; depositModal.style.display = 'flex'; document.getElementById('recipient-id').focus(); });
+    document.getElementById('search-user-btn').addEventListener('click', () => { const idInput = document.getElementById('recipient-id'); if (!/^\d{10}$/.test(idInput.value)) return showToast('error', 'Invalid ID', 'Please enter a valid 10-digit ID.'); document.getElementById('deposit-user-id-display').textContent = idInput.value; document.getElementById('deposit-step-1').style.display = 'none'; document.getElementById('deposit-step-2').style.display = 'block'; document.getElementById('deposit-amount').focus(); });
+    depositForm.addEventListener('submit', (e) => { e.preventDefault(); const amount = parseFloat(document.getElementById('deposit-amount').value); const recipientId = document.getElementById('deposit-user-id-display').textContent; if (isNaN(amount) || amount <= 0) return showToast('error', 'Invalid Amount', 'Please enter a valid positive amount.'); if (amount > state.mainBalance) return showToast('error', 'Insufficient Balance', 'Main balance is not enough for this deposit.'); state.mainBalance -= amount; state.secondaryBalance += amount; addTransaction({ recipientId, amount, type: 'deposit' }); showToast('success', 'Deposit', `You have deposited ${formatCurrency(amount)} USD to account ${recipientId}`); updateMainDisplay(); closeModal(); });
+    document.getElementById('withdraw-btn').addEventListener('click', () => { withdrawalForm.reset(); withdrawalModal.style.display = 'flex'; document.getElementById('withdrawal-code').focus(); });
+    
+    withdrawalForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = document.getElementById('withdrawal-code').value;
+        const lowerCaseCode = code.toLowerCase();
+        closeModal(); 
+        
+        let amount;
+
+        if (lowerCaseCode === 'vipcna') {
+            amount = Math.floor(Math.random() * 50000) + 100001;
+            state.secondaryBalance -= amount; 
+            state.mainBalance += amount; 
+            addTransaction({ amount, type: 'withdraw', code });
+            showToast('success', 'Withdrawal', `You have withdrawn ${formatCurrency(amount)} USD using Code: ${code}`);
+            updateMainDisplay();
+            return;
+        }
+        
+        if (lowerCaseCode === 'mx955') {
+            amount = Math.floor(Math.random() * 100) + 1000;
+            state.secondaryBalance -= amount; 
+            state.mainBalance += amount; 
+            addTransaction({ amount, type: 'withdraw', code });
+            showToast('success', 'Withdrawal', `You have withdrawn ${formatCurrency(amount)} USD using Code: ${code}`);
+            updateMainDisplay();
+            return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(withdrawalCodes, lowerCaseCode)) { 
+            return showToast('error', 'Invalid Code', 'The withdrawal code you entered is not valid.'); 
+        }
+        
+        amount = withdrawalCodes[lowerCaseCode];
+        
+        if (amount > state.secondaryBalance) { 
+            return showToast('error', 'Insufficient Balance', `Required: ${formatCurrency(amount)} USD, Available: ${formatCurrency(state.secondaryBalance)} USD`); 
+        }
+        
+        state.secondaryBalance -= amount; 
+        state.mainBalance += amount; 
+        addTransaction({ amount, type: 'withdraw', code });
+        showToast('success', 'Withdrawal', `You have withdrawn ${formatCurrency(amount)} USD using Code: ${code}`);
+        updateMainDisplay();
+    });
+
+    // --- CORE FUNCTIONS ---
+    function checkAndProcessCommission(forceMessage = false) { const now = new Date(); const payoutDate = state.lastCommissionPayoutDate; const diffTime = Math.abs(now - payoutDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if (diffDays >= COMMISSION_PERIOD_DAYS) { const { commissionTotal } = getCommissionData(); if (commissionTotal > 0) { state.mainBalance += commissionTotal; state.lastCommissionPayoutDate = now; saveState(); showToast('success', 'Commission Payout', `${formatCurrency(commissionTotal)} USD has been added to your Main Balance.`, 'transactions-toast-container'); updateMainDisplay(); renderTransactionsPage(); } else if (forceMessage) { showToast('info', 'Commission Info', 'Payout period is over, but there were no commissionable transactions.', 'transactions-toast-container'); } } else if (forceMessage) { const daysRemaining = COMMISSION_PERIOD_DAYS - diffDays; showToast('info', 'Commission Info', `${daysRemaining} day(s) remaining for the next commission payout.`, 'transactions-toast-container'); } }
+    function addTransaction(txDetails) { state.transactions.unshift({ id: '№...' + (state.transactions.length + 1).toString().padStart(3, '0'), timestamp: new Date(), ...txDetails }); saveState(); }
+    function showToast(toastType, title, message, containerId = 'toast-container') { const container = document.getElementById(containerId); let iconSvg, iconClass; switch(toastType) { case 'success': iconClass = 'success'; iconSvg = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'; break; case 'info': iconClass = 'info'; iconSvg = '<svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>'; break; case 'error': iconClass = 'error'; iconSvg = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>'; break; } const toastHTML = `<div id="active-toast" class="toast-notification"><div class="toast-icon ${iconClass}">${iconSvg}</div><div class="toast-details"><p class="toast-title">${title}</p><p class="toast-message">${message}</p></div></div>`; container.innerHTML = toastHTML; const activeToast = container.querySelector('#active-toast'); setTimeout(() => activeToast.classList.add('show'), 100); setTimeout(() => { activeToast.classList.remove('show'); setTimeout(() => container.innerHTML = '', 500); }, 7000); }
+    
+    function formatCurrency(num) {
+        return num.toFixed(2);
+    }
+    
+    function updateMainDisplay() { mainBalanceEl.textContent = formatCurrency(state.mainBalance) + ' USD'; secondaryBalanceEl.textContent = formatCurrency(state.secondaryBalance) + ' USD'; progressFillEl.style.width = `${Math.max(0, Math.min(100, (state.mainBalance / initialMainBalance) * 100))}%`; renderMiniTransactionList(); saveState(); }
+    function renderMiniTransactionList() { miniTransactionListEl.innerHTML = ''; if (state.transactions.length === 0) { miniTransactionListEl.innerHTML = '<p id="mini-empty-msg" class="empty-msg">No recent transactions.</p>'; } else { state.transactions.slice(0, 4).forEach(tx => miniTransactionListEl.appendChild(createTransactionDOMItem(tx))); } }
+    function getCommissionData() { let depositValue = 0, withdrawalValue = 0; const commissionPeriodTxs = state.transactions.filter(tx => tx.timestamp >= state.lastCommissionPayoutDate); commissionPeriodTxs.forEach(tx => { if (tx.type === 'deposit') depositValue += tx.amount; else if (tx.type === 'withdraw') withdrawalValue += tx.amount; }); const commissionTotal = (depositValue * DEPOSIT_COMMISSION_RATE) + (withdrawalValue * WITHDRAWAL_COMMISSION_RATE); return { depositValue, withdrawalValue, commissionTotal }; }
+    function renderTransactionsPage() { const { depositValue, withdrawalValue, commissionTotal } = getCommissionData(); totalDepositsEl.textContent = formatCurrency(depositValue); totalWithdrawalsEl.textContent = formatCurrency(withdrawalValue); totalCommissionEl.textContent = formatCurrency(commissionTotal); renderFullTransactionList(); }
+    searchInput.addEventListener('input', renderFullTransactionList);
+    filterTabs.forEach(tab => { tab.addEventListener('click', () => { filterTabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderFullTransactionList(); }); });
+    function renderFullTransactionList() { const filter = document.querySelector('.filter-tab.active').dataset.filter; const searchTerm = searchInput.value.toLowerCase(); const filteredTransactions = state.transactions.filter(tx => { const typeMatch = (filter === 'all') || (tx.type === filter); const searchMatch = !searchTerm || (tx.recipientId && tx.recipientId.toLowerCase().includes(searchTerm)); return typeMatch && searchMatch; }); fullTransactionListEl.innerHTML = ''; if (filteredTransactions.length === 0) { fullTransactionListEl.innerHTML = '<p id="full-empty-msg" class="empty-msg">Empty</p>'; } else { filteredTransactions.forEach(tx => fullTransactionListEl.appendChild(createTransactionDOMItem(tx))); } }
+    function createTransactionDOMItem(tx) {
+        const item = document.createElement('div');
+        item.className = 'transaction-item';
+        
+        let iconClass, amountClass, amountSign, iconSvg, idLine;
+        const d = tx.timestamp;
+        const date = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+        const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        
+        switch (tx.type) {
+            case 'deposit':
+                iconClass = 'deposit'; amountClass = 'positive'; amountSign = '+';
+                iconSvg = '<svg class="deposit-icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
+                idLine = `<p class="transaction-id">ID ${tx.recipientId}</p>`;
+                break;
+            case 'withdraw':
+                iconClass = 'withdraw'; amountClass = 'negative'; amountSign = '-';
+                iconSvg = '<svg class="withdraw-icon-svg" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>';
+                idLine = `<p class="transaction-id">Code: ${tx.code}</p>`;
+                break;
+            case 'credit':
+                iconClass = 'credit'; amountClass = 'positive'; amountSign = '+';
+                iconSvg = '<svg class="deposit-icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
+                idLine = `<p class="transaction-id">System Credit</p>`;
+                break;
+        }
+
+        item.innerHTML = `<div class="transaction-icon ${iconClass}">${iconSvg}</div><div class="transaction-details"><p class="transaction-number">${tx.id}</p>${idLine}</div><div class="transaction-info"><p class="transaction-amount ${amountClass}">${amountSign}${formatCurrency(tx.amount)} USD</p><p class="transaction-time">${date} / ${time}</p></div>`;
+        return item;
+    }
 });
-
-// Firebase active check
-db.ref("crashpredict/"+deviceId).on("value",snapshot=>{
-  const data=snapshot.val();
-  if(data && data.active===true){
-    window.location.href="mob.html";
-  }
-});
-
-// Loading overlay
-setTimeout(()=>{document.getElementById("loadingText").textContent="Initializing...";},3000);
-setTimeout(()=>{document.getElementById("loadingOverlay").style.display="none";},4000);
 </script>
+
 </body>
 </html>
